@@ -94,7 +94,7 @@ class JanusSFUPlugin(JanusPlugin):
         pcs.add(pc)
 
         self.recorder = MediaRecorder("input_video.mp4")
-        # self.recorder = MediaRecorder("test/file-%3d.png")
+        self.recorder = MediaRecorder(f'images/{client_id}-%3d.png')
         # self.recorder = MediaRecorder("test.mp4", options={'-v': '0', '-vcodec"': 'mpeg4', '-f': 'udp://127.0.0.1:23000'})
         
         # -v 0 -vcodec mpeg4 -f mpegts udp://127.0.0.1:23000

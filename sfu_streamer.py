@@ -13,9 +13,6 @@ if TYPE_CHECKING:
 
 import numpy as np 
 
-import os
-from pathlib import Path
-from multiprocessing import Process
 
 async def subscribe(session: JanusSession):
     # Create plugin
@@ -57,21 +54,6 @@ async def connect_janus_sfu(sfu_uri, ssl_context):
     await client.disconnect()
     # print("End of main")
 
-def stream_analyser():
-    results_folder = 'images'
-    print("ahh")
-    while True:
-        # check for image files in folder
-        for p in Path(results_folder).glob('*.png'):
-            print(f"{p.name}:\n{p.read_text()}\n")
-
-        # take latest image
-
-        # perform YOLOv8
-
-        # return results somehow?
-
-
 async def main():
     sfu_uri = "wss://cowebxr.com:8989/janus"
 
@@ -85,10 +67,6 @@ async def main():
     run_sfu_capture = asyncio.create_task(connect_janus_sfu(sfu_uri, ssl_context))
     # run_analyser = asyncio.create_task(stream_analyser())
     await asyncio.gather(run_sfu_capture)
-
-run_analyser = Process(target=stream_analyser)
-run_analyser.start()
-run_analyser.join()
 
 asyncio.run(main())
 
