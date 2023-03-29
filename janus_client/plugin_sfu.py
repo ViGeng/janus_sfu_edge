@@ -86,6 +86,16 @@ class JanusSFUPlugin(JanusPlugin):
         await self.joined_event.wait()
         return self.users
 
+    async def send_data(self, results_data: dict) -> None:
+        response = await self.send({
+            "janus": "message",
+            "body": {
+                "kind": "data",
+                "whom": None,
+                "body": str(results_data)
+            }
+        })
+
     async def subscribe(self, room_id: int, user_id: int, client_id: str) -> None:
         """Join a room
         """
@@ -143,5 +153,5 @@ class JanusSFUPlugin(JanusPlugin):
         await self.send(payload)
 
         await self.recorder.start()
-        await asyncio.sleep(5)
+        await asyncio.sleep(60*60) # record for an hour
         await self.recorder.stop()

@@ -5,7 +5,7 @@ import asyncio
 import pathlib
 from concurrent.futures import TimeoutError
 
-from janus_client import JanusClient, JanusAdminMonitorClient
+from janus_client import JanusClient
 from janus_client.plugin_sfu import JanusSFUPlugin
 from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
@@ -68,5 +68,7 @@ async def main():
     # run_analyser = asyncio.create_task(stream_analyser())
     await asyncio.gather(run_sfu_capture)
 
-asyncio.run(main())
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
