@@ -29,8 +29,11 @@ class JanusSFUPlugin(JanusPlugin):
             if "plugindata" in response:
                 print('\n')
                 print(response["plugindata"]["data"])
-                if response["plugindata"]["data"]["success"] == True:
-                    self.joined_event.set()
+                try:
+                    if response["plugindata"]["data"]["success"] == True:
+                        self.joined_event.set()
+                except:
+                    pass
                 try:
                     self.users = response["plugindata"]["data"]["response"]["users"]["1"]
                 except:
@@ -41,6 +44,8 @@ class JanusSFUPlugin(JanusPlugin):
                 #     self.joined_event.set()
                 # elif response["plugindata"]["data"]["videoroom"] == "joined":
                 #     # Participant joined (joined as publisher but may not publish)
+        elif response["janus"] == "transaction":
+            pass
         else:
             print("Unimplemented response handle:", response["janus"])
             print(response)
@@ -103,7 +108,7 @@ class JanusSFUPlugin(JanusPlugin):
         pc = RTCPeerConnection()
         pcs.add(pc)
 
-        self.recorder = MediaRecorder("input_video.mp4")
+        # self.recorder = MediaRecorder("input_video.mp4")
         self.recorder = MediaRecorder(f'images/{client_id}-%3d.png')
         # self.recorder = MediaRecorder("test.mp4", options={'-v': '0', '-vcodec"': 'mpeg4', '-f': 'udp://127.0.0.1:23000'})
         
