@@ -56,7 +56,7 @@ async def publish(session: JanusSession):
 
         if previous_client != client_id or previous_frame != frame_no:
             # perform YOLOv8
-            results = model(latest_image)
+            results = model(latest_image) #, save=True)
             
             results_final = []
             for result in results:
