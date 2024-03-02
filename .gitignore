@@ -1,1 +1,7 @@
 images/
+*.crt
+*.csr
+*.key
+*.pem
+*.png
+*.mp4
