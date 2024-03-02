@@ -1,10 +1,15 @@
 
 from __future__ import annotations
+
 import asyncio
-from typing import TYPE_CHECKING, Type, TypeVar, Dict
+from typing import TYPE_CHECKING, Dict, Type, TypeVar
+
 from .plugin_base import JanusPlugin
+
 if TYPE_CHECKING:
     from .core import JanusClient
+
+from utils import logger
 
 PluginBaseType = TypeVar('PluginBaseType', bound=JanusPlugin)
 
@@ -52,11 +57,11 @@ class JanusSession:
             if response["sender"] in self.plugin_handles:
                 self.plugin_handles[response["sender"]].handle_async_response(response)
             else:
-                print("Got response for plugin handle but handle not found. Handle ID:", response["sender"])
-                print("Unhandeled response:", response)
+                logger.warning(f"Got response for plugin handle but handle not found")
+                logger.debug("Unhandeled response:", response)
         else:
             # This is response for self
-            print("Async event for session:", response)
+            logger.debug("Async event for session:", response)
 
     async def create_plugin_handle(self, plugin_type: Type[PluginBaseType]) -> PluginBaseType:
         """Create plugin handle for the given plugin type

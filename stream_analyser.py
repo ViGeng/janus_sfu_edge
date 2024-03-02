@@ -1,15 +1,23 @@
-import glob, os
-from ultralytics import YOLO
-import json
-
-import ssl
 import asyncio
-
-from janus_client import JanusClient
-from janus_client.plugin_sfu import JanusSFUPlugin
-from janus_client import JanusSession
+import glob
+import json
+import logging
+import os
+import ssl
 
 import numpy as np
+from ultralytics import YOLO
+
+from janus_client import JanusClient, JanusSession
+from janus_client.plugin_sfu import JanusSFUPlugin
+
+# 获取aiortc包的日志记录器
+aiortc_logger = logging.getLogger('websockets')
+aiortc_logger.setLevel(logging.INFO)  # 设置日志级别为INFO或更高级别（如WARNING、ERROR、CRITICAL）
+
+# 如果您想要同时关闭其他包的debug信息，可以设置根记录器的级别
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
 
 async def publish(session: JanusSession):
     results_folder = 'images'
@@ -93,7 +101,7 @@ async def publish(session: JanusSession):
             }
 
             results_json = json.dumps(results_to_client)
-            print(results_json)
+            # print(results_json)
 
             # broadcast results to Janus SFU 
             send_data = await plugin_handle.send_data(results_json)
@@ -129,7 +137,7 @@ async def connect_janus_sfu(sfu_uri, ssl_context):
 
 
 async def main():
-    sfu_uri = "wss://cowebxr.com:8989/janus"
+    sfu_uri = "wss://webxr.wgeng.site:8080/janus"
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     ssl_context.check_hostname = False

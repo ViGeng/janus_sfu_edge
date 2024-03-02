@@ -73,7 +73,7 @@ def stream_analyser():
 
 
 async def main():
-    sfu_uri = "wss://cowebxr.com:8989/janus"
+    sfu_uri = "wss://webxr.wgeng.site:8989/janus"
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     localhost_pem = pathlib.Path(__file__).with_name("lt_limmengkiat_name_my.crt")

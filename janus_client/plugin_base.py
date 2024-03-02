@@ -1,9 +1,13 @@
 
 from __future__ import annotations
-import asyncio
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .session import JanusSession
+
+from utils import logger
+
 
 class JanusPlugin():
     """Base class to inherit when implementing a plugin"""

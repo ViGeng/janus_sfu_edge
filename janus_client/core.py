@@ -1,11 +1,16 @@
 
 import asyncio
-import websockets
 import json
-import uuid
+import logging
 import traceback
+import uuid
+from typing import Any, Dict, Type
+
+import websockets
+
+from utils import logger
+
 from .session import JanusSession
-from typing import Type, Dict, Any
 
 '''
 Architecture design to handle Janus transactions and events
@@ -23,13 +28,13 @@ class JanusSession
     def handle_async_response(self, response):
         pass
 '''
+from . import logger
 
 
 class JanusClient:
     """Janus client instance, connected through websocket"""
 
-    def __init__(self, uri: str, api_secret: str = None,
-                 token: str = None):
+    def __init__(self, uri: str, api_secret: str = "", token: str = ""):
         """Initialize client instance
 
         :param uri: Janus server address
@@ -49,8 +54,6 @@ class JanusClient:
 
         All extra keyword arguments will be passed to websockets.connect
         """
-
-        print("Connecting to: ", self.uri)
         # self.ws = await websockets.connect(self.uri, ssl=ssl_context)
         self.ws = await websockets.connect(self.uri,
                                            subprotocols=[
@@ -59,12 +62,10 @@ class JanusClient:
         self.receive_message_task = asyncio.create_task(self.receive_message())
         self.receive_message_task.add_done_callback(
             self.receive_message_done_cb)
-        print("Connected")
 
     async def disconnect(self) -> None:
         """Disconnect from server"""
 
-        print("Disconnecting")
         self.receive_message_task.cancel()
         await self.ws.close()
 
@@ -82,11 +83,11 @@ class JanusClient:
             # Check if any exceptions are raised
             exception = task.exception()
             traceback.print_tb(exception.__traceback__)
-            print(f"{type(exception)} : {exception}")
+            logger.warning(f"{type(exception)} : {exception}")
         except asyncio.CancelledError as e:
-            print("Receive message task ended")
+            logger.warning("Receive message task cancelled")
         except asyncio.InvalidStateError as e:
-            print("receive_message_done_cb called with invalid state")
+            logger.warning("receive_message_done_cb called with invalid state")
         except Exception as e:
             traceback.print_tb(e.__traceback__)
 
@@ -94,11 +95,8 @@ class JanusClient:
         assert self.ws
         async for message_raw in self.ws:
             response = json.loads(message_raw)
-            # print("WOW")
-            # print(response)
             if self.is_async_response(response):
                 self.handle_async_response(response)
-            # elif "jsep" in response:
             else:
                 transaction_id = response["transaction"]
                 await self.transactions[transaction_id].put(response)
@@ -124,14 +122,12 @@ class JanusClient:
             message["token"] = self.token
 
         # Send the message
-        print(json.dumps(message))
         await self.ws.send(json.dumps(message))
 
         # Wait for response
         # Assumption: there will be one and only one synchronous reply for a transaction.
         #   Other replies with the same transaction ID are asynchronous.
         response = await self.transactions[transaction_id].get()
-        print("Transaction reply: ", response)
 
         # Transaction complete, delete it
         del self.transactions[transaction_id]
@@ -144,12 +140,12 @@ class JanusClient:
                 self.sessions[response["session_id"]
                               ].handle_async_response(response)
             else:
-                print("Got response for session but session not found. Session ID:",
+                logger.warning("Got response for session but session not found. Session ID:",
                       response["session_id"])
-                print("Unhandeled response:", response)
+                logger.warning("Unhandeled response:", response)
         else:
             # This is response for self
-            print("Async event for Janus client core:", response)
+            logger.warning("Async event for Janus client core:", response)
 
     async def create_session(self, session_type: Type[JanusSession] = JanusSession) -> JanusSession:
         """Create Janus session instance
@@ -194,17 +190,16 @@ class JanusAdminMonitorClient:
         self.transactions: Dict[str, asyncio.Queue] = dict()
 
     async def connect(self, **kwargs: Any) -> None:
-        print("Connecting to: ", self.uri)
+        logger.info("Connecting to: ", self.uri)
         # self.ws = await websockets.connect(self.uri, ssl=ssl_context)
         self.ws = await websockets.connect(self.uri,
                                            subprotocols=[
                                                websockets.Subprotocol("janus-admin-protocol")],
                                            **kwargs)
         self.receive_message_task = asyncio.create_task(self.receive_message())
-        print("Connected")
+        logger.info("Connected")
 
     async def disconnect(self):
-        print("Disconnecting")
         self.receive_message_task.cancel()
         await self.ws.close()
 
@@ -232,14 +227,14 @@ class JanusAdminMonitorClient:
             message["admin_secret"] = self.admin_secret
 
         # Send the message
-        print(json.dumps(message))
+        logger.debug(f"Sending message: {json.dumps(message)}")
         await self.ws.send(json.dumps(message))
 
         # Wait for response
         # Assumption: there will be one and only one synchronous reply for a transaction.
         #   Other replies with the same transaction ID are asynchronous.
         response = await self.transactions[transaction_id].get()
-        print("Transaction reply: ", response)
+        logger.debug("Transaction reply: ", response)
 
         # Transaction complete, delete it
         del self.transactions[transaction_id]

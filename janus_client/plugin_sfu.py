@@ -1,9 +1,13 @@
 
-from .plugin_base import JanusPlugin
 import asyncio
+import os
 
 from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from aiortc.contrib.media import MediaPlayer, MediaRecorder
+
+from utils import logger
+
+from .plugin_base import JanusPlugin
 
 pcs = set()
 
@@ -25,10 +29,8 @@ class JanusSFUPlugin(JanusPlugin):
 
     def handle_async_response(self, response: dict):
         if response["janus"] == "event":
-            print("Event response:", response)
             if "plugindata" in response:
-                print('\n')
-                print(response["plugindata"]["data"])
+                logger.debug(f"Event: {response['plugindata']['data']}")
                 try:
                     if response["plugindata"]["data"]["success"] == True:
                         self.joined_event.set()
@@ -47,8 +49,8 @@ class JanusSFUPlugin(JanusPlugin):
         elif response["janus"] == "transaction":
             pass
         else:
-            print("Unimplemented response handle:", response["janus"])
-            print(response)
+            logger.info(f"Unimplemented response handle, response:{response['janus']}")
+            logger.debug(response)
         # Handle JSEP. Could be answer or offer.
         if "jsep" in response:
             asyncio.create_task(self.sdp_processing(response["jsep"]))
@@ -109,17 +111,21 @@ class JanusSFUPlugin(JanusPlugin):
         pcs.add(pc)
 
         # self.recorder = MediaRecorder("input_video.mp4")
-        self.recorder = MediaRecorder(f'images/{client_id}-%3d.png')
+
+        target_dir = './images'
+        # mkdir images if not exists
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+            logger.info(f"Target output directory {target_dir} not found, created")
+        self.recorder = MediaRecorder(f'{target_dir}/{client_id}-%3d.png')
         # self.recorder = MediaRecorder("test.mp4", options={'-v': '0', '-vcodec"': 'mpeg4', '-f': 'udp://127.0.0.1:23000'})
         
         # -v 0 -vcodec mpeg4 -f mpegts udp://127.0.0.1:23000
 
         @pc.on("track")
         async def on_track(track):
-            print("Track %s received" % track.kind)
-            if track.kind == "video":
-                self.recorder.addTrack(track)
-            if track.kind == "audio":
+            logger.info(f"Track Kind:{track.kind} received")
+            if track.kind == "video" or track.kind == "audio":
                 self.recorder.addTrack(track)
 
         await self.send({

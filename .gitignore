@@ -5,3 +5,5 @@ images/
 *.pem
 *.png
 *.mp4
+janus_client/__pycache__/
+utils/__pycache__/

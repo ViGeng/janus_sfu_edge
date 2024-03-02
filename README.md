@@ -7,8 +7,9 @@ There might be a need to install the above-linked Python module. If not, it shou
 
 ```sh
 pip3 install ultralytics
-pip3 install numpy
-pip3 install 
+# pip3 install numpy
+pip3 install aiortc
+pip3 install websockets
 ```
 
 There are two main scripts, `sfu_streamer.py`and `stream_analyser.py`, both of which can be run as `python3 file_name.py` without any parameters. You will need to edit the files themselves though, i.e., point to the correct Janus SFU server.
@@ -20,6 +21,30 @@ sfu_uri = "wss://cowebxr.com:8989/janus"
 ```
 
 Replace the URI with your Janus SFU server. 
+
+localhost pem file:To generate a self-signed SSL certificate for your localhost using OpenSSL, you can follow these steps:
+
+```shell
+# **Install OpenSSL**: If you don't already have OpenSSL installed on your system, you can download and install it from the OpenSSL website or using a package manager for your operating system.
+
+mkdir sslkeys && cd sslkeys
+
+# **Generate a Private Key**: First, generate a private key using OpenSSL. Open a terminal and run the following command:
+openssl genrsa -out localhost.key 2048
+
+# **Generate a Certificate Signing Request (CSR)**: Next, generate a CSR using the private key you just created. Run the following command in the terminal, if it lets you enter some information, just press enter to skip it:
+openssl req -new -key localhost.key -out localhost.csr
+
+# **Generate a Self-Signed SSL Certificate**: Now, generate a self-signed SSL certificate using the CSR and private key. Run the following command in the terminal:
+
+openssl x509 -req -days 365 -in localhost.csr -signkey localhost.key -out localhost.crt
+
+
+# **Combine the Certificate and Private Key into a PEM file**: Finally, you can combine the SSL certificate and private key into a single PEM file. Run the following command in the terminal:
+cat localhost.crt localhost.key > localhost.pem
+
+# After following these steps, you will have generated a self-signed SSL certificate for your localhost, which can be used for setting up secure connections in your applications.
+```
 
 1. The streamer can be run using `python sfu_streamer.py`, this script was designed to open the Janus SFU-sent video stream and saves video frames as .png images. The image format and the functionality of this script is defined by the function `subscribe` in `plugin_sfu.py`.
 
