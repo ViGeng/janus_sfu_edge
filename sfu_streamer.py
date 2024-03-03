@@ -34,7 +34,7 @@ async def subscribe(session: JanusSession):
     plugin_handle: JanusSFUPlugin = await session.create_plugin_handle(JanusSFUPlugin)
 
     room_id = 1 
-    user_id = np.random.randint(1e15, 1e16, 1)[0]
+    user_id = np.random.randint(10**15, 10**16) # TODO: use generate_username() to generate a random username
     logger.info(f'Connecting to Janus SFU session with Room:{room_id} and joining as UserID {user_id}')
     
     participants = await plugin_handle.list_participants(room_id, user_id)

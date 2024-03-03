@@ -30,7 +30,7 @@ async def publish(session: JanusSession):
     plugin_handle: JanusSFUPlugin = await session.create_plugin_handle(JanusSFUPlugin)
 
     room_id = 1 
-    user_id = np.random.randint(1e15, 1e16, 1)[0]
+    user_id = np.random.randint(10**15, 10**16) # TODO: use generate_username() to generate a random username
 
     print(f'Connecting to Janus SFU session with ID {room_id} and joining as user with ID {user_id}')
     
@@ -100,11 +100,8 @@ async def publish(session: JanusSession):
                 "data": results_final
             }
 
-            results_json = json.dumps(results_to_client)
-            # print(results_json)
-
             # broadcast results to Janus SFU 
-            send_data = await plugin_handle.send_data(results_json)
+            send_data = await plugin_handle.send_data(results_to_client)
 
         previous_client = client_id
         previous_frame = frame_no

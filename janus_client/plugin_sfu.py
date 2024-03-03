@@ -1,5 +1,6 @@
 
 import asyncio
+import json
 import os
 
 from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
@@ -24,7 +25,7 @@ class JanusSFUPlugin(JanusPlugin):
         self.joined_event = asyncio.Event()
         self.loop = asyncio.get_running_loop()
 
-        self.users = dict()
+        self.users = list()
         self.jsep_response = dict()
 
     def handle_async_response(self, response: dict):
@@ -94,12 +95,13 @@ class JanusSFUPlugin(JanusPlugin):
         return self.users
 
     async def send_data(self, results_data: dict) -> None:
+        body = json.dumps(results_data) # TODO: temp fix
         response = await self.send({
             "janus": "message",
             "body": {
                 "kind": "data",
                 "whom": None,
-                "body": str(results_data)
+                "body": body,
             }
         })
 
